@@ -66,14 +66,14 @@ export default function Dashboard() {
   return (
     <div className="w-full animate-fade pb-10">
       
-      {/* 1. Header Section (بدون Welcome Back) */}
+      {/* 1. Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
          <div>
-            <h2 className="text-3xl font-bold text-white">لوحة التحكم</h2>
-            <p className="text-gray-400 text-sm mt-1">ملخص الأداء المالي والطلبات</p>
+            <h2 className="text-3xl font-bold text-white">Dashboard</h2>
+            <p className="text-gray-400 text-sm mt-1">Financial performance & orders summary</p>
          </div>
          
-         {/* Filter Buttons (Style جديد) */}
+         {/* Filter Buttons */}
          <div className="bg-[#1a1a1a] p-1 rounded-lg border border-[#333] flex shadow-lg">
             {['today', 'week', 'month'].map((f) => (
                 <button
@@ -85,7 +85,7 @@ export default function Dashboard() {
                         : 'text-gray-400 hover:text-white hover:bg-[#222]'
                     }`}
                 >
-                    {f === 'today' ? 'اليوم' : f === 'week' ? 'أسبوع' : 'شهر'}
+                    {f === 'today' ? 'Today' : f === 'week' ? 'Week' : 'Month'}
                 </button>
             ))}
          </div>
@@ -98,7 +98,7 @@ export default function Dashboard() {
           <div className="bg-gradient-to-br from-[#121212] to-[#1a1a1a] p-6 rounded-2xl border border-[#333] relative overflow-hidden group hover:border-[#B69142] transition-all duration-300">
               <div className="flex justify-between items-start mb-4">
                   <div>
-                    <p className="text-gray-400 text-sm">إجمالي المبيعات</p>
+                    <p className="text-gray-400 text-sm">Total Revenue</p>
                     <h3 className="text-4xl font-bold text-[#B69142] mt-2">
                         {loading ? '...' : stats.revenue.toLocaleString()} <span className="text-sm font-normal text-gray-500">LE</span>
                     </h3>
@@ -116,7 +116,7 @@ export default function Dashboard() {
           <div className="bg-gradient-to-br from-[#121212] to-[#1a1a1a] p-6 rounded-2xl border border-[#333] relative overflow-hidden group hover:border-blue-500 transition-all duration-300">
               <div className="flex justify-between items-start mb-4">
                   <div>
-                    <p className="text-gray-400 text-sm">عدد الطلبات</p>
+                    <p className="text-gray-400 text-sm">Orders Count</p>
                     <h3 className="text-4xl font-bold text-white mt-2">
                         {loading ? '...' : stats.ordersCount}
                     </h3>
@@ -127,18 +127,18 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center gap-2 text-xs text-blue-400 mt-2">
                  <span className="bg-blue-500/20 px-2 py-1 rounded">Avg: {stats.avgOrder} LE</span>
-                 <span>متوسط الطلب</span>
+                 <span>Average Order</span>
               </div>
           </div>
 
           {/* Payment Methods Card */}
           <div className="bg-gradient-to-br from-[#121212] to-[#1a1a1a] p-6 rounded-2xl border border-[#333] hover:border-green-500 transition-all duration-300">
-              <p className="text-gray-400 text-sm mb-4">تحليل الدفع</p>
+              <p className="text-gray-400 text-sm mb-4">Payment Analysis</p>
               
               {/* Cash Bar */}
               <div className="mb-4">
                   <div className="flex justify-between text-xs mb-1">
-                      <span className="text-green-400 font-bold"><i className="fas fa-money-bill mr-1"></i> كاش</span>
+                      <span className="text-green-400 font-bold"><i className="fas fa-money-bill mr-1"></i> Cash</span>
                       <span className="text-white">{stats.cash}</span>
                   </div>
                   <div className="w-full bg-[#222] h-2 rounded-full overflow-hidden">
@@ -149,7 +149,7 @@ export default function Dashboard() {
               {/* Visa Bar */}
               <div>
                   <div className="flex justify-between text-xs mb-1">
-                      <span className="text-purple-400 font-bold"><i className="fas fa-credit-card mr-1"></i> إلكتروني</span>
+                      <span className="text-purple-400 font-bold"><i className="fas fa-credit-card mr-1"></i> Electronic</span>
                       <span className="text-white">{stats.visa}</span>
                   </div>
                   <div className="w-full bg-[#222] h-2 rounded-full overflow-hidden">
@@ -163,25 +163,25 @@ export default function Dashboard() {
       <div className="bg-[#121212] rounded-xl border border-[#333] overflow-hidden shadow-xl">
           <div className="p-5 border-b border-[#333] flex justify-between items-center bg-[#1a1a1a]">
               <h3 className="font-bold text-white flex items-center gap-2">
-                 <i className="fas fa-history text-[#B69142]"></i> آخر النشاطات
+                 <i className="fas fa-history text-[#B69142]"></i> Recent Activity
               </h3>
           </div>
           <div className="overflow-x-auto">
-              <table className="w-full text-center border-collapse">
+              <table className="w-full text-left border-collapse">
                   <thead className="bg-[#121212] text-gray-500 text-xs uppercase tracking-wider">
                       <tr>
-                          <th className="p-4 font-medium">رقم الطلب</th>
-                          <th className="p-4 font-medium">العميل</th>
-                          <th className="p-4 font-medium">المبلغ</th>
-                          <th className="p-4 font-medium">الدفع</th>
-                          <th className="p-4 font-medium">الوقت</th>
+                          <th className="p-4 font-medium">Order ID</th>
+                          <th className="p-4 font-medium">Customer</th>
+                          <th className="p-4 font-medium">Amount</th>
+                          <th className="p-4 font-medium">Payment</th>
+                          <th className="p-4 font-medium">Time</th>
                       </tr>
                   </thead>
                   <tbody className="text-gray-300 text-sm divide-y divide-[#222]">
                       {loading ? (
-                          <tr><td colSpan="5" className="p-8 text-gray-500">جاري تحميل البيانات...</td></tr>
+                          <tr><td colSpan="5" className="p-8 text-gray-500">Loading data...</td></tr>
                       ) : recentOrders.length === 0 ? (
-                          <tr><td colSpan="5" className="p-8 text-gray-500">لا توجد طلبات مسجلة في هذه الفترة</td></tr>
+                          <tr><td colSpan="5" className="p-8 text-gray-500">No orders found in this period</td></tr>
                       ) : (
                           recentOrders.map(order => (
                               <tr key={order.order_id} className="hover:bg-[#1f1f1f] transition-colors">
