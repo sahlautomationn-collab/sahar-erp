@@ -1,13 +1,28 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation'; // أضفنا useRouter
+import { supabase } from '@/lib/supabase'; // استدعاء ملف السوبابيز
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter(); // لعمل التوجيه بعد الخروج
   const [isHovered, setIsHovered] = useState(false);
 
-  // القائمة ثابتة باللغة الإنجليزية
+  // وظيفة تسجيل الخروج
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // توجيه المستخدم لصفحة اللوجن بعد نجاح الخروج
+      router.push('/login');
+    } catch (error) {
+      console.error('Error logging out:', error.message);
+      alert('حدث خطأ أثناء تسجيل الخروج');
+    }
+  };
+
   const menuItems = [
     { name: 'Dashboard', path: '/admin', icon: 'fa-chart-pie' },
     { name: 'Best Sellers', path: '/admin/best-sellers', icon: 'fa-trophy' },
@@ -57,11 +72,9 @@ export default function Sidebar() {
                       : 'text-gray-400 hover:bg-[#252525] hover:text-white'
                     } ${!isHovered && 'justify-center'} `}
                 >
-                  {/* Icon */}
                   <i className={`fas ${item.icon} text-xl transition-transform duration-300 group-hover:scale-110 
                     ${isActive ? 'text-black' : 'text-[#B69142]'} min-w-[24px] text-center`}></i>
                   
-                  {/* Text */}
                   <span className={`text-sm tracking-wide whitespace-nowrap overflow-hidden transition-all duration-300
                     ${isHovered 
                         ? 'w-auto opacity-100 translate-x-0' 
@@ -70,7 +83,6 @@ export default function Sidebar() {
                     {item.name}
                   </span>
 
-                  {/* Tooltip (Fixed Position) */}
                   {!isHovered && (
                     <div className="absolute left-14 top-2 bg-[#333] text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 border border-[#B69142]">
                       {item.name}
@@ -85,8 +97,6 @@ export default function Sidebar() {
 
       {/* Footer / User Area */}
       <div className="p-4 border-t border-[#333] overflow-hidden flex flex-col gap-2">
-        
-        {/* User Card */}
         <div className={`flex items-center gap-3 px-2 py-2 rounded-xl bg-[#121212] border border-[#333] transition-all duration-300
           ${!isHovered && 'justify-center border-none bg-transparent'}`}>
             
@@ -99,11 +109,15 @@ export default function Sidebar() {
                 <p className="text-[10px] text-green-500 truncate">Online</p>
             </div>
             
-            <button className={`text-gray-500 hover:text-red-500 transition-colors ${!isHovered && 'hidden'}`}>
+            {/* زرار اللوج أوت المربوط بالدالة */}
+            <button 
+              onClick={handleLogout}
+              className={`text-gray-500 hover:text-red-500 transition-colors p-2 ${!isHovered && 'hidden'}`}
+              title="Logout"
+            >
               <i className="fas fa-sign-out-alt"></i>
             </button>
         </div>
-
       </div>
     </div>
   );
