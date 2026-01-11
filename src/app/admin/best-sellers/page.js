@@ -1,5 +1,5 @@
-import Suppliers from '@/components/best-sellers';
+import BestSellers from '../../../components/BestSellers';
 
-export default function SuppliersPage() {
-  return <Suppliers />;
+export default function BestSellersPage() {
+  return <BestSellers />;
 }

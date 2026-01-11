@@ -1,0 +1,37 @@
+/**
+ * Middleware to protect admin routes
+ */
+
+import { auth } from './src/lib/auth';
+import { logger } from './src/lib/logger';
+
+export function middleware(request) {
+  const { pathname } = request.nextUrl;
+
+  // Check if the path is an admin route
+  if (pathname.startsWith('/admin')) {
+    // Allow login page
+    if (pathname === '/login') {
+      return;
+    }
+
+    // Check authentication
+    if (!auth.isAuthenticated()) {
+      logger.warn('Unauthorized access attempt', true);
+      return Response.redirect(new URL('/login', request.url));
+    }
+
+    // Check role-based access
+    const userRole = auth.getRole();
+    if (userRole !== 'admin' && userRole !== 'manager') {
+      logger.warn('Insufficient permissions', true);
+      return Response.redirect(new URL('/login', request.url));
+    }
+  }
+
+  return;
+}
+
+export const config = {
+  matcher: '/admin/:path*'
+};

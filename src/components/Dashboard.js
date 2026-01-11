@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 
 export default function Dashboard() {
   const [filter, setFilter] = useState('today');
@@ -41,7 +42,7 @@ export default function Dashboard() {
       .order('created_at', { ascending: false });
 
     if (error) {
-        console.error("Error fetching stats:", error);
+        logger.error("Error fetching dashboard stats", error);
         setLoading(false);
         return;
     }
@@ -64,7 +65,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="w-full animate-fade pb-10">
+    <div className="w-full animate-fade">
       
       {/* 1. Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
@@ -92,8 +93,8 @@ export default function Dashboard() {
       </div>
 
       {/* 2. KPI Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+
           {/* Revenue Card */}
           <div className="bg-gradient-to-br from-[#121212] to-[#1a1a1a] p-6 rounded-2xl border border-[#333] relative overflow-hidden group hover:border-[#B69142] transition-all duration-300">
               <div className="flex justify-between items-start mb-4">
@@ -108,7 +109,7 @@ export default function Dashboard() {
                   </div>
               </div>
               <div className="w-full bg-[#222] h-1 rounded-full mt-2 overflow-hidden">
-                 <div className="bg-[#B69142] h-full animate-pulse" style={{width: '70%'}}></div>
+                 <div className="bg-[#B69142] h-full animate-pulse transition-all duration-500" style={{width: `${Math.min((stats.revenue / 10000) * 100, 100)}%`}}></div>
               </div>
           </div>
 
@@ -166,7 +167,7 @@ export default function Dashboard() {
                  <i className="fas fa-history text-[#B69142]"></i> Recent Activity
               </h3>
           </div>
-          <div className="overflow-x-auto">
+          <div className="table-container">
               <table className="w-full text-left border-collapse">
                   <thead className="bg-[#121212] text-gray-500 text-xs uppercase tracking-wider">
                       <tr>

@@ -6,7 +6,7 @@ export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('All'); // All, Completed, New
+  const [filter, setFilter] = useState('All'); // All, New, Preparing, Ready, Delivered, Completed, Cancelled
 
   useEffect(() => {
     fetchOrders();
@@ -14,13 +14,13 @@ export default function Orders() {
 
   async function fetchOrders() {
     setLoading(true);
-    // جلب آخر 100 طلب لتغطية البحث والفلترة بشكل مبدئي
+    // جلب آخر 200 طلب لتغطية البحث والفلترة بشكل أفضل
     const { data } = await supabase
       .from('orders')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(100);
-    
+      .limit(200);
+
     if (data) setOrders(data);
     setLoading(false);
   }
@@ -38,8 +38,8 @@ export default function Orders() {
   });
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] gap-6 text-gray-100 font-sans p-2 overflow-hidden">
-      
+    <div className="flex flex-col h-[calc(100vh-2.5rem)] gap-4 text-gray-100 font-sans p-2 overflow-hidden">
+
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
          <div className="flex items-center gap-3">
@@ -51,9 +51,9 @@ export default function Orders() {
          <div className="flex gap-3 w-full md:w-auto">
             <div className="relative flex-1 md:w-64">
                 <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                <input 
-                    type="text" 
-                    placeholder="Search ID, Name, Phone..." 
+                <input
+                    type="text"
+                    placeholder="Search ID, Name, Phone..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="w-full bg-[#121212] border border-[#333] py-2 pl-10 pr-4 rounded-xl text-sm focus:border-[#B69142] outline-none"
@@ -67,22 +67,22 @@ export default function Orders() {
 
       {/* Main Content Card */}
       <div className="flex-1 bg-[#1E1E1E] rounded-[2rem] border border-[#333] shadow-2xl flex flex-col overflow-hidden">
-        
+
         {/* Table Header & Filters */}
         <div className="p-5 border-b border-[#333] bg-[#252525] flex flex-col md:flex-row justify-between items-center gap-4">
              {/* Filter Tabs */}
-             <div className="flex bg-[#121212] p-1 rounded-lg border border-[#333]">
-                {['All', 'New', 'Completed', 'Preparing'].map(status => (
-                    <button 
+             <div className="flex bg-[#121212] p-1 rounded-lg border border-[#333] flex-wrap gap-1">
+                {['All', 'New', 'Preparing', 'Ready', 'Delivered', 'Completed', 'Cancelled'].map(status => (
+                    <button
                         key={status}
                         onClick={() => setFilter(status)}
-                        className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${filter === status ? 'bg-[#B69142] text-black shadow' : 'text-gray-500 hover:text-white'}`}
+                        className={`px-3 py-1.5 rounded-md text-[10px] md:text-xs font-bold transition-all ${filter === status ? 'bg-[#B69142] text-black shadow' : 'text-gray-500 hover:text-white'}`}
                     >
                         {status}
                     </button>
                 ))}
              </div>
-             
+
              <div className="text-xs text-gray-400">
                 Showing <span className="text-white font-bold">{filteredOrders.length}</span> orders
              </div>
@@ -90,12 +90,14 @@ export default function Orders() {
 
         {/* Table Area */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+          <div className="table-container rounded-lg border border-[#333]">
             <table className="w-full text-left border-collapse">
                 <thead className="bg-[#1a1a1a] text-gray-500 text-xs uppercase sticky top-0 z-10 shadow-md">
                     <tr>
                         <th className="p-4 rounded-l-xl">Order ID</th>
                         <th className="p-4">Customer</th>
                         <th className="p-4">Summary</th>
+                        <th className="p-4">Type</th>
                         <th className="p-4">Payment</th>
                         <th className="p-4">Total</th>
                         <th className="p-4">Status</th>
@@ -104,9 +106,9 @@ export default function Orders() {
                 </thead>
                 <tbody className="text-sm">
                     {loading ? (
-                        <tr><td colSpan="7" className="text-center p-10 text-gray-500">Loading orders...</td></tr>
+                        <tr><td colSpan="8" className="text-center p-10 text-gray-500">Loading orders...</td></tr>
                     ) : filteredOrders.length === 0 ? (
-                        <tr><td colSpan="7" className="text-center p-10 text-gray-500">No orders found matching your search.</td></tr>
+                        <tr><td colSpan="8" className="text-center p-10 text-gray-500">No orders found matching your search.</td></tr>
                     ) : (
                         filteredOrders.map(order => (
                             <tr key={order.order_id} className="border-b border-[#2a2a2a] hover:bg-[#252525] transition-colors group">
@@ -130,6 +132,17 @@ export default function Orders() {
                                     </p>
                                 </td>
 
+                                {/* Type */}
+                                <td className="p-4">
+                                    <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
+                                        order.order_type === 'website'
+                                            ? 'bg-blue-900/30 text-blue-400 border border-blue-900'
+                                            : 'bg-purple-900/30 text-purple-400 border border-purple-900'
+                                    }`}>
+                                        {order.order_type || 'POS'}
+                                    </span>
+                                </td>
+
                                 {/* Payment Method */}
                                 <td className="p-4">
                                     <div className="flex items-center gap-2">
@@ -146,9 +159,13 @@ export default function Orders() {
                                 {/* Status */}
                                 <td className="p-4">
                                     <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border
-                                        ${order.status === 'Completed' ? 'bg-green-900/30 text-green-400 border-green-900' : 
-                                          order.status === 'New' ? 'bg-yellow-900/30 text-yellow-400 border-yellow-900 animate-pulse' : 
-                                          'bg-blue-900/30 text-blue-400 border-blue-900'}`}>
+                                        ${order.status === 'Completed' ? 'bg-green-900/30 text-green-400 border-green-900' :
+                                          order.status === 'New' ? 'bg-yellow-900/30 text-yellow-400 border-yellow-900 animate-pulse' :
+                                          order.status === 'Preparing' ? 'bg-blue-900/30 text-blue-400 border-blue-900' :
+                                          order.status === 'Ready' ? 'bg-purple-900/30 text-purple-400 border-purple-900' :
+                                          order.status === 'Delivered' ? 'bg-teal-900/30 text-teal-400 border-teal-900' :
+                                          order.status === 'Cancelled' ? 'bg-red-900/30 text-red-400 border-red-900' :
+                                          'bg-gray-700/30 text-gray-400 border-gray-700'}`}>
                                         {order.status}
                                     </span>
                                 </td>
@@ -164,6 +181,7 @@ export default function Orders() {
                     )}
                 </tbody>
             </table>
+          </div>
         </div>
       </div>
     </div>

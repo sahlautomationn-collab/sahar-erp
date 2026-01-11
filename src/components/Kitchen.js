@@ -17,9 +17,10 @@ export default function Kitchen() {
     const { data } = await supabase.from('orders')
       .select('*')
       .eq('is_paid', true)
-      .neq('status', 'Completed') 
+      .neq('status', 'Cancelled') // Exclude cancelled orders
+      .neq('status', 'Delivered') // Exclude delivered orders
       .order('created_at', { ascending: true }); // الأقدم يظهر الأول (FIFO)
-    
+
     if(data) {
         setOrders(data);
         setLoading(false);
@@ -29,17 +30,10 @@ export default function Kitchen() {
   async function updateStatus(id, status) {
     // تحديث الحالة في قاعدة البيانات
     const { error } = await supabase.from('orders').update({ status }).eq('order_id', id);
-    
+
     if (!error) {
         // تحديث الحالة محلياً بسرعة عشان الانيميشن
         setOrders(prev => prev.map(o => o.order_id === id ? { ...o, status } : o));
-        
-        // لو خلص، شيله من الشاشة بعد ثانية عشان الشيف يشوف إنه خلص
-        if (status === 'Completed') {
-            setTimeout(() => {
-                setOrders(prev => prev.filter(o => o.order_id !== id));
-            }, 500);
-        }
     }
   }
 
@@ -59,7 +53,7 @@ export default function Kitchen() {
   }
 
   return (
-    <div className="p-4 h-[calc(100vh-80px)] overflow-hidden flex flex-col font-sans">
+    <div className="p-4 h-[calc(100vh-2.5rem)] overflow-hidden flex flex-col font-sans">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -170,16 +164,16 @@ export default function Kitchen() {
                     )}
                     
                     {order.status === 'Preparing' && (
-                      <button onClick={() => updateStatus(order.order_id, 'Ready')} 
-                        className="w-full bg-[#1a1a1a] border border-green-500 text-green-500 hover:bg-green-600 hover:text-white font-bold py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2">
-                        <span>MARK READY</span> <i className="fas fa-check"></i>
+                      <button onClick={() => updateStatus(order.order_id, 'Completed')}
+                        className="w-full bg-green-700 text-gray-300 hover:bg-green-600 hover:text-white font-bold py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                        <span>COMPLETED</span> <i className="fas fa-check-circle"></i>
                       </button>
                     )}
 
-                    {order.status === 'Ready' && (
-                      <button onClick={() => updateStatus(order.order_id, 'Completed')} 
+                    {order.status === 'Completed' && (
+                      <button onClick={() => updateStatus(order.order_id, 'Delivered')}
                         className="w-full bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white font-bold py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2">
-                         <span>DELIVERED</span> <i className="fas fa-paper-plane"></i>
+                         <span>DELIVERED</span> <i className="fas fa-motorcycle"></i>
                       </button>
                     )}
                   </div>

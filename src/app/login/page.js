@@ -1,7 +1,11 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../../lib/supabase';
+import { auth } from '../../lib/auth';
+import { validators } from '../../lib/utils';
+import { logger } from '../../lib/logger';
+import { toast } from '../../lib/toast';
 import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -13,28 +17,79 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e?.preventDefault();
+
+    console.log('[Login] Starting login process...');
+
+    // Validate inputs
+    if (!validators.isRequired(email)) {
+      toast.error('Email is required');
+      return;
+    }
+
+    if (!validators.isEmail(email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    if (!validators.isRequired(password)) {
+      toast.error('Password is required');
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
     setLoading(true);
-    
+
     try {
-      const { data: { user }, error } = await supabase.auth.signInWithPassword({ 
-        email, 
-        password 
+      console.log('[Login] Attempting to sign in...');
+      const { data: { user }, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
-      
+
       if (error) throw error;
-      
+
+      console.log('[Login] User authenticated:', user.id);
+
       const { data: roleData } = await supabase
         .from('user_roles')
         .select('role')
         .eq('id', user.id)
         .single();
-      
-      localStorage.setItem('erp_role', roleData?.role || 'user');
-      router.push('/admin');
-      
+
+      console.log('[Login] User role:', roleData?.role || 'user');
+
+      // Store authentication data
+      const session = await supabase.auth.getSession();
+      console.log('[Login] Session access_token:', session.data.session?.access_token ? 'Found' : 'Not found');
+
+      auth.setAuth(
+        session.data.session?.access_token,
+        user,
+        roleData?.role || 'user'
+      );
+
+      console.log('[Login] Auth data stored in localStorage');
+
+      // Verify it was stored
+      const storedToken = localStorage.getItem('erp_auth_token');
+      const storedRole = localStorage.getItem('erp_role');
+      console.log('[Login] Verification - Token in storage:', storedToken ? 'Yes' : 'No');
+      console.log('[Login] Verification - Role in storage:', storedRole);
+
+      toast.success('Login successful! Redirecting...');
+      setTimeout(() => {
+        console.log('[Login] Redirecting to /admin');
+        router.push('/admin');
+      }, 1000);
+
     } catch (err) {
-      console.error('Login error:', err);
-      alert('خطأ في تسجيل الدخول: ' + err.message);
+      console.error('[Login] Error:', err);
+      logger.error('Login failed', err);
+      toast.error(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }

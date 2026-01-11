@@ -1,6 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const PROJECT_URL = 'https://wxmwneumvsxkensiwnnl.supabase.co';
-const PROJECT_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4bXduZXVtdnN4a2Vuc2l3bm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc1MDkyOTEsImV4cCI6MjA4MzA4NTI5MX0.s2B9SQ6WgBfajFrwPAhshkewQnXkBB2DIH0Vh_43HGs';
+const PROJECT_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const PROJECT_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!PROJECT_URL || !PROJECT_KEY) {
+  throw new Error('Missing Supabase environment variables. Please check your .env.local file.');
+}
 
 export const supabase = createClient(PROJECT_URL, PROJECT_KEY);

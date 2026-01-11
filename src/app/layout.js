@@ -1,6 +1,7 @@
 import { Tajawal } from "next/font/google";
 import "./globals.css";
 import "toastify-js/src/toastify.css";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 
 const tajawal = Tajawal({
   subsets: ["arabic", "latin"],
@@ -17,16 +18,16 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <link 
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
-          rel="stylesheet" 
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <link
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          rel="stylesheet"
         />
       </head>
       <body className={`${tajawal.variable} font-sans bg-[#121212] text-gray-100 antialiased overflow-x-hidden`}>
-        {/* كان هنا فيه <LanguageProvider> وإحنا شيلناه خلاص 
-           دلوقتي بنعرض الـ children مباشرة 
-        */}
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
       </body>
     </html>
   );

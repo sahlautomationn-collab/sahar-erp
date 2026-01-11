@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../lib/supabase';
 
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
@@ -17,18 +17,26 @@ export default function Customers() {
   const filtered = customers.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search));
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-[#B69142]"><i className="fas fa-users mr-2"></i> Customers Database</h1>
-        <input 
-            type="text" placeholder="Search customer..." 
-            className="bg-[#121212] border border-[#333] px-4 py-2 rounded-lg text-white focus:border-[#B69142] outline-none"
+    <div className="flex flex-col h-[calc(100vh-2.5rem)] gap-4 text-gray-100 font-sans p-2 overflow-hidden">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex items-center gap-3">
+          <i className="fas fa-users text-[#B69142] text-2xl"></i>
+          <h1 className="text-2xl font-bold text-white">Customers Database</h1>
+        </div>
+        <div className="relative flex-1 md:w-64">
+          <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+          <input
+            type="text" placeholder="Search customer..."
+            className="w-full bg-[#121212] border border-[#333] py-2 pl-10 pr-4 rounded-xl text-white focus:border-[#B69142] outline-none"
             onChange={(e) => setSearch(e.target.value)}
-        />
+          />
+        </div>
       </div>
-      
-      <div className="bg-[#1E1E1E] rounded-2xl border border-[#333] overflow-hidden">
-        <table className="w-full text-left">
+
+      <div className="flex-1 bg-[#1E1E1E] rounded-[2rem] border border-[#333] shadow-2xl flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+          <div className="table-container rounded-lg border border-[#333]">
+            <table className="w-full text-left">
           <thead className="bg-[#252525] text-gray-400 text-xs uppercase">
             <tr>
               <th className="p-4">Customer Name</th>
@@ -58,6 +66,8 @@ export default function Customers() {
             ))}
           </tbody>
         </table>
+          </div>
+        </div>
       </div>
     </div>
   );

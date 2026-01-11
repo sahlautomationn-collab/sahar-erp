@@ -1,7 +1,9 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import Toastify from 'toastify-js';
+import { toast } from '../lib/toast';
+import { logger } from '../lib/logger';
+import { validators, sanitizers } from '../lib/utils';
 
 export default function Menu() {
   const [menu, setMenu] = useState([]);
@@ -19,111 +21,136 @@ export default function Menu() {
 
   async function fetchMenu() {
     const { data, error } = await supabase.from('menu').select('*').order('id', { ascending: true });
-    if (error) console.error("Error fetching menu:", error);
+    if (error) logger.error("Error fetching menu", error);
     if (data) setMenu(data);
   }
 
-  // --- 1. دالة إضافة منتج جديد (بالصورة) ---
+  // --- 1. Add new menu item function ---
   async function addNewItem() {
-    // تحقق سريع
-    if (!newItem.name_ar || !newItem.price) return Toastify({text: "الاسم والسعر مطلوبين!", style:{background:"#ff4444"}}).showToast();
-    
-    const toastId = Toastify({text: "جاري الإضافة... ⏳", style:{background:"#333"}, duration: -1}).showToast();
-    
+    // Validation
+    if (!validators.isRequired(newItem.name_ar)) {
+      return toast.error("Name (Arabic) is required");
+    }
+
+    if (!validators.isPositive(newItem.price)) {
+      return toast.error("Price must be a positive number");
+    }
+
+    // Sanitize inputs
+    const sanitizedItem = {
+      ...newItem,
+      name_ar: sanitizers.sanitizeString(newItem.name_ar),
+      name_en: sanitizers.sanitizeString(newItem.name_en),
+      price: sanitizers.sanitizeNumber(newItem.price),
+      discount_price: sanitizers.sanitizeNumber(newItem.discount_price) || 0,
+      cost: sanitizers.sanitizeNumber(newItem.cost) || 0
+    };
+
+    const loadingToast = toast.loading("Adding item...");
+
     let finalImageUrl = null;
 
     try {
-      // أ) لو فيه صورة مختارة، نرفعها الأول
+      // Upload image if selected
       if (newItemImage) {
         const fileExt = newItemImage.name.split('.').pop();
         const fileName = `new_${Date.now()}.${fileExt}`;
-        
+
         const { error: uploadError } = await supabase.storage
           .from('menu_images')
           .upload(fileName, newItemImage);
-        
+
         if (uploadError) throw uploadError;
-        
+
         const { data: { publicUrl } } = supabase.storage
           .from('menu_images')
           .getPublicUrl(fileName);
-          
+
         finalImageUrl = publicUrl;
       }
 
-      // ب) تجهيز البيانات للإرسال
-      const payload = { 
-        ...newItem, 
-        image: finalImageUrl, // بنحط لينك الصورة هنا
-        // لو الـ ID فاضي، نمسحه عشان الداتابيز تعمل Auto Increment
-        id: newItem.id ? newItem.id : undefined 
+      // Prepare data payload
+      const payload = {
+        ...sanitizedItem,
+        image: finalImageUrl,
+        id: sanitizedItem.id ? sanitizedItem.id : undefined
       };
 
-      // تنظيف الأرقام الفاضية (عشان ميحصلش خطأ)
-      if(payload.discount_price === '') payload.discount_price = 0;
-      if(payload.cost === '') payload.cost = 0;
-
-      // ج) الإرسال لقاعدة البيانات
+      // Insert into database
       const { error } = await supabase.from('menu').insert([payload]);
-      
+
       if (error) throw error;
 
-      // د) نجاح
-      Toastify({text: "تمت الإضافة بنجاح 🚀", style:{background:"#00c851"}}).showToast();
-      fetchMenu(); // تحديث الجدول
-      
-      // تصفير الفورم
-      setNewItem({ 
+      // Success
+      toast.success("Item added successfully");
+      fetchMenu();
+
+      // Reset form
+      setNewItem({
         id: '', name_ar: '', name_en: '', category: 'hot',
-        price: '', discount_price: '', cost: '', 
+        price: '', discount_price: '', cost: '',
         is_available: true, is_trending: false
       });
-      setNewItemImage(null); // تصفير الصورة
+      setNewItemImage(null);
 
     } catch (err) {
-      alert("خطأ في الإضافة: " + err.message);
-    } finally {
-        // إغلاق التوست القديم (ميزة متقدمة لو حابب، أو سيبه يختفي لوحده)
+      logger.error("Error adding menu item", err);
+      toast.error("Failed to add item: " + err.message);
     }
   }
 
-  // --- 2. دالة التعديل السريع في الجدول ---
+  // --- 2. Quick update function ---
   async function updateItem(oldId, field, value) {
     if (field === 'id') {
-       if(!confirm("تحذير: تغيير الـ ID قد يسبب مشاكل. متأكد؟")) {
-         fetchMenu(); return;
-       }
+       toast.confirm("Warning: Changing the ID may cause issues. Are you sure?", async () => {
+         await performUpdate(oldId, field, value);
+       });
+       return;
     }
+
+    await performUpdate(oldId, field, value);
+  }
+
+  async function performUpdate(oldId, field, value) {
     try {
-      const { error } = await supabase.from('menu').update({ [field]: value }).eq('id', oldId);
+      // Sanitize value if it's a string
+      const sanitizedValue = typeof value === 'string'
+        ? sanitizers.sanitizeString(value)
+        : value;
+
+      const { error } = await supabase.from('menu').update({ [field]: sanitizedValue }).eq('id', oldId);
       if (error) throw error;
-      Toastify({text: "تم الحفظ ✅", style:{background:"#00c851", boxShadow: "0 0 10px #00c851"}}).showToast();
-      fetchMenu(); 
+
+      toast.success("Saved successfully");
+      fetchMenu();
     } catch (error) {
-      console.error(error);
-      alert("فشل التحديث: " + error.message);
+      logger.error("Error updating item", error);
+      toast.error("Failed to update: " + error.message);
       fetchMenu();
     }
   }
 
-  // --- 3. دالة تغيير الصورة لمنتج موجود ---
+  // --- 3. Change image for existing item ---
   async function handleImageChange(id, e) {
     const file = e.target.files[0];
     if (!file) return;
-    Toastify({text: "جاري تغيير الصورة... ⏳", style:{background:"#333"}}).showToast();
+
+    toast.loading("Changing image...");
+
     try {
       const fileName = `menu_${id}_${Date.now()}.${file.name.split('.').pop()}`;
       await supabase.storage.from('menu_images').upload(fileName, file);
       const { data: { publicUrl } } = supabase.storage.from('menu_images').getPublicUrl(fileName);
       await updateItem(id, 'image', publicUrl);
-      Toastify({text: "تم تغيير الصورة 🖼️", style:{background:"#00c851"}}).showToast();
+      toast.success("Image changed successfully");
     } catch (error) {
-      alert("فشل الرفع: " + error.message);
+      logger.error("Error uploading image", error);
+      toast.error("Upload failed: " + error.message);
     }
   }
 
   return (
-    <div className="space-y-8 animate-fade w-full overflow-hidden pb-10">
+    <div className="space-y-8 animate-fade w-full overflow-hidden">
       
       {/* ================= FORM SECTION (NEW STYLE) ================= */}
       <div className="bg-[#121212] p-6 rounded-xl border border-[#B69142] relative overflow-hidden">
@@ -199,7 +226,7 @@ export default function Menu() {
       </div>
 
       {/* ================= TABLE SECTION ================= */}
-      <div className="bg-[#121212] rounded-xl border border-[#333] overflow-x-auto shadow-2xl">
+      <div className="table-container bg-[#121212] rounded-xl border border-[#333] shadow-2xl">
         <table className="w-full text-center border-collapse min-w-[1200px]">
           <thead>
             <tr className="text-[#B69142] bg-[#1a1a1a] text-sm uppercase tracking-wider font-bold">
@@ -218,18 +245,20 @@ export default function Menu() {
           <tbody className="text-gray-300 text-sm font-medium">
             {menu.map(item => (
               <tr key={item.id} className="border-b border-[#222] hover:bg-[#1f1f1f] transition-colors group">
-                
+
                 {/* Image Upload */}
-                <td className="p-3 flex justify-center relative group cursor-pointer">
-                  <label htmlFor={`file-${item.id}`} className="cursor-pointer relative block w-10 h-10">
-                    <div className="w-10 h-10 bg-[#222] rounded overflow-hidden border border-[#333] group-hover:border-[#B69142]">
-                      <img src={item.image || 'https://placehold.co/100'} onError={(e) => e.target.src='https://placehold.co/100?text=Error'} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded">
-                      <i className="fas fa-pen text-white text-xs"></i>
-                    </div>
-                  </label>
-                  <input type="file" id={`file-${item.id}`} className="hidden" accept="image/*" onChange={(e) => handleImageChange(item.id, e)} />
+                <td className="p-3">
+                  <div className="flex justify-center relative group cursor-pointer">
+                    <label htmlFor={`file-${item.id}`} className="cursor-pointer relative block w-24 h-24 shrink-0">
+                      <div className="w-full h-full bg-[#222] rounded-lg overflow-hidden border border-[#333] group-hover:border-[#B69142]">
+                        <img src={item.image || 'https://placehold.co/100'} onError={(e) => e.target.src='https://placehold.co/100?text=Error'} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                        <i className="fas fa-pen text-white text-xs"></i>
+                      </div>
+                    </label>
+                    <input type="file" id={`file-${item.id}`} className="hidden" accept="image/*" onChange={(e) => handleImageChange(item.id, e)} />
+                  </div>
                 </td>
 
                 <td className="p-3"><input type="number" className="bg-transparent text-center text-gray-500 border-b border-transparent focus:border-[#B69142] outline-none w-14" defaultValue={item.cost} onBlur={e => updateItem(item.id, 'cost', e.target.value)} /></td>

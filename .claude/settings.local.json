@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(test:*)",
+      "Bash(npx eslint:*)",
+      "Bash(node:*)",
+      "Bash(grep:*)",
+      "Bash(for:*)",
+      "Bash(do sed:*)",
+      "Bash(done:*)"
+    ]
+  }
+}

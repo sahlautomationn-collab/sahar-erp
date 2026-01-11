@@ -133,30 +133,30 @@ export default function POS() {
   const categories = ['All', ...new Set(menu.map(i => i.category))];
 
   return (
-    <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)] gap-6 text-gray-100 overflow-hidden font-sans p-2">
-      
+    <div className="flex flex-col lg:flex-row h-[calc(100vh-2.5rem)] gap-4 text-gray-100 overflow-hidden font-sans p-2">
+
       {/* 🟢 LEFT SIDE: PRODUCTS GRID */}
       <div className="flex-1 bg-[#1E1E1E] rounded-[2rem] shadow-2xl border border-[#333] p-5 flex flex-col h-full relative overflow-hidden">
-        
+
         {/* Top Bar: Search & Categories */}
         <div className="flex flex-col gap-4 mb-6 z-10">
           <div className="relative">
              <i className="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-             <input 
-               type="text" 
-               placeholder="Search menu..." 
+             <input
+               type="text"
+               placeholder="Search menu..."
                value={search}
                onChange={(e) => setSearch(e.target.value)}
                className="w-full bg-[#121212] border border-[#333] py-3.5 pl-12 pr-4 rounded-xl text-white focus:border-[#B69142] focus:ring-1 focus:ring-[#B69142] outline-none transition-all shadow-inner"
              />
           </div>
-          
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
             {categories.map(cat => (
-              <button key={cat} onClick={() => setCategory(cat)} 
-                className={`px-6 py-2.5 rounded-xl whitespace-nowrap text-sm font-bold transition-all shadow-md transform active:scale-95
-                ${category === cat 
-                  ? 'bg-gradient-to-r from-[#B69142] to-[#d4af37] text-black shadow-[#B69142]/20' 
+              <button key={cat} onClick={() => setCategory(cat)}
+                className={`px-6 py-2.5 rounded-xl whitespace-nowrap text-sm font-bold transition-all shadow-md transform active:scale-95 shrink-0
+                ${category === cat
+                  ? 'bg-gradient-to-r from-[#B69142] to-[#d4af37] text-black shadow-[#B69142]/20'
                   : 'bg-[#2a2a2a] text-gray-400 hover:bg-[#333] hover:text-white'}`}>
                 {cat.toUpperCase()}
               </button>
@@ -166,7 +166,7 @@ export default function POS() {
 
         {/* Grid Area */}
         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar z-10">
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-10">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredMenu.map(item => {
               // هل المنتج متاح؟
               const isAvailable = item.is_available; 
@@ -229,7 +229,7 @@ export default function POS() {
       </div>
 
       {/* 🟠 RIGHT SIDE: CART (Sidebar) */}
-      <div className="w-full lg:w-[420px] bg-[#1E1E1E] rounded-[2rem] shadow-2xl border border-[#333] flex flex-col h-full shrink-0 overflow-hidden">
+      <div className="w-full lg:w-96 xl:w-[420px] max-w-[90vw] bg-[#1E1E1E] rounded-[2rem] shadow-2xl border border-[#333] flex flex-col h-full shrink-0 overflow-hidden">
         
         {/* Customer Header */}
         <div className="p-5 bg-[#252525] border-b border-[#333]">

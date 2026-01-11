@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase} from '../lib/supabase';
 import Toastify from 'toastify-js';
 import "toastify-js/src/toastify.css";
 
@@ -107,8 +107,8 @@ export default function Suppliers() {
   );
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] gap-6 text-gray-100 font-sans p-2 overflow-hidden" onClick={() => setActiveMenuId(null)}>
-      
+    <div className="flex flex-col h-[calc(100vh-2.5rem)] gap-4 text-gray-100 font-sans p-2 overflow-hidden" onClick={() => setActiveMenuId(null)}>
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
          <div className="flex items-center gap-3">
@@ -119,8 +119,8 @@ export default function Suppliers() {
          <div className="flex gap-3 w-full md:w-auto">
             <div className="relative flex-1 md:w-64">
                 <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                <input 
-                    type="text" placeholder="Search supplier..." 
+                <input
+                    type="text" placeholder="Search supplier..."
                     value={search} onChange={(e) => setSearch(e.target.value)}
                     className="w-full bg-[#121212] border border-[#333] py-2 pl-10 pr-4 rounded-xl text-sm focus:border-[#B69142] outline-none"
                 />
@@ -130,11 +130,11 @@ export default function Suppliers() {
             </button>
          </div>
       </div>
-      
+
       {/* Grid */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-10">
-        {loading ? <div className="text-center text-gray-500 mt-20">Loading...</div> : 
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
+        {loading ? <div className="text-center text-gray-500 mt-20">Loading...</div> :
+         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredSuppliers.map(sup => (
                 <div key={sup.id} className="relative bg-[#1E1E1E] p-5 rounded-[2rem] border border-[#333] hover:border-[#B69142] transition-all group hover:-translate-y-1 hover:shadow-xl">
                     

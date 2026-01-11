@@ -1,4 +1,4 @@
-import InventoryLog from '@/components/inventory-log';
+import InventoryLog from '../../../components/InventoryLog';
 
 export default function InventoryLogPage() {
   return <InventoryLog />;

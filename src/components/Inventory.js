@@ -141,8 +141,8 @@ export default function Inventory() {
   });
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] gap-6 text-gray-100 font-sans p-2 overflow-hidden">
-      
+    <div className="flex flex-col h-[calc(100vh-2.5rem)] gap-4 text-gray-100 font-sans p-2 overflow-hidden">
+
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
          <div className="flex items-center gap-3">
@@ -154,15 +154,15 @@ export default function Inventory() {
          <div className="flex gap-3 w-full md:w-auto">
             <div className="relative flex-1 md:w-64">
                 <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                <input 
-                    type="text" 
-                    placeholder="Search by name..." 
+                <input
+                    type="text"
+                    placeholder="Search by name..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="w-full bg-[#121212] border border-[#333] py-2 pl-10 pr-4 rounded-xl text-sm focus:border-[#B69142] outline-none transition-all"
                 />
             </div>
-            
+
             <div className="flex bg-[#121212] p-1 rounded-xl border border-[#333]">
                 <button onClick={() => setFilter('all')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filter === 'all' ? 'bg-[#333] text-white' : 'text-gray-500'}`}>All</button>
                 <button onClick={() => setFilter('low')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filter === 'low' ? 'bg-red-900 text-white' : 'text-gray-500'}`}>Low</button>
@@ -178,7 +178,7 @@ export default function Inventory() {
                 <p>Loading Inventory...</p>
              </div>
         ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 pb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredItems.map(item => {
                 const isLowStock = item.stock <= item.min_limit;
                 const ingredientName = item.ingredients?.name || 'Unknown Item';
