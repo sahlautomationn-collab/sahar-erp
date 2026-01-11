@@ -1,4 +1,4 @@
-import Recipes from '../../../components/Recipes';
+import Recipes from '../../../components/Recipes.js';
 
 export default function RecipesPage() {
   return <Recipes />;
